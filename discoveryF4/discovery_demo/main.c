@@ -50,8 +50,12 @@ static uint32_t Demo_USBConfig(void);
 
 /* Private functions ---------------------------------------------------------*/
 int adc_convert();
-void adc_configure();
-void GPIO_PIN_INIT(void);
+void ADC_Configure(void);
+void GPIO_Configure_Out(void);
+void GPIO_Configure_In(void);
+void RCC_Configure(void);
+
+
 
 inline int conv2temp(uint16_t value){
   return ( ( ( ( value * 2960 ) / 4096 ) - 760 ) / ( 25 / 10 ) ) + 25;
@@ -90,13 +94,14 @@ int main(void)
 
 /* Try to test ADC.*/
     SystemInit();
-    RCC_AHB1PeriphClockCmd(  RCC_AHB1Periph_GPIOE , ENABLE );
-    GPIO_PIN_INIT();
-    adc_configure();
+    RCC_Configure();
+    GPIO_Configure_Out();
+    GPIO_Configure_In();
+    ADC_Configure();
 
     uint16_t USING_PIN[]={GPIO_Pin_3, GPIO_Pin_4, GPIO_Pin_5, GPIO_Pin_6, GPIO_Pin_7, GPIO_Pin_8, GPIO_Pin_9, GPIO_Pin_10, GPIO_Pin_11, GPIO_Pin_12, GPIO_Pin_13, GPIO_Pin_14};
     while(1){
-      GPIO_ResetBits(GPIOE, GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14);
+      GPIO_ResetBits(GPIOG, GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14);
 
       ConvertedValue = adc_convert();   //Read the ADC converted value
       uint16_t sum = 0;
@@ -105,7 +110,7 @@ int main(void)
       for(i=0; i<12; ++i)
         sum|=(ConvertedValue & (1 << i)?USING_PIN[i]:0);
       
-      GPIO_SetBits(GPIOE, sum);      
+      GPIO_SetBits(GPIOG, sum);      
       Delay(100);
     }
 
@@ -114,35 +119,56 @@ int main(void)
   else{}
 }
  
-void adc_configure(){
+void RCC_Configure(void)
+{
+	RCC_AHB1PeriphClockCmd(  RCC_AHB1Periph_GPIOG , ENABLE );
+	
+	//Clock configuration
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);//ADC1 is connected to APB2 peripheral bus
+    RCC_AHB1PeriphClockCmd(RCC_AHB1ENR_GPIOCEN, ENABLE);//Clock for the ADC port!! Do not forget about this one ;) 
+}
+ 
+ 
+void ADC_Configure(){
   ADC_InitTypeDef ADC_init_structure; //Structure for adc confguration
+<<<<<<< HEAD
+=======
   GPIO_InitTypeDef GPIO_initStructre; //Structure for analog input pin
-
   //Clock configuration
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);//ADC1 is connected to APB2 peripheral bus
-  RCC_AHB1PeriphClockCmd(RCC_AHB1ENR_GPIOCEN, ENABLE);//Clock for the ADC port!! Do not forget about this one ;)
-
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1,ENABLE);//ADC1 is connected to APB2 peripheral bus
+  RCC_AHB1PeriphClockCmd(RCC_AHB1ENR_GPIOCEN,ENABLE);//Clock for the ADC port!! Do not forget about this one ;)
   //Analog input pin configuration
   GPIO_initStructre.GPIO_Pin = GPIO_Pin_0;//The channel 10 is connected to PC0
   GPIO_initStructre.GPIO_Mode = GPIO_Mode_AN; //The PC0 pin is configured in analog mode
   GPIO_initStructre.GPIO_PuPd = GPIO_PuPd_NOPULL; //We don't need any pull up or pull down
-  GPIO_Init(GPIOC, &GPIO_initStructre);
+  GPIO_Init(GPIOC,&GPIO_initStructre);
+>>>>>>> parent of df576d4... adjust coding style for adc_configure()
 
   //ADC structure configuration
   ADC_DeInit();//reset all parameters to their default values
   ADC_init_structure.ADC_DataAlign = ADC_DataAlign_Right;//converted data will be shifted to right
-  ADC_init_structure.ADC_Resolution = ADC_Resolution_12b;//Input voltage is converted into a 12-bit number whose maximum value is 4095
+  ADC_init_structure.ADC_Resolution = ADC_Resolution_10b;//Input voltage is converted into a 10-bit number whose maximum value is 4095
   ADC_init_structure.ADC_ContinuousConvMode = ENABLE; //the conversion is continuous, the input data is converted more than once
   ADC_init_structure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;//use timer 1 capture/compare channel 1 for external trigger
   ADC_init_structure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;//no trigger for conversion
   ADC_init_structure.ADC_NbrOfConversion = 1;//Number of used ADC channels
   ADC_init_structure.ADC_ScanConvMode = DISABLE;//No scan (only one channel)
+<<<<<<< HEAD
   ADC_Init(ADC1, &ADC_init_structure);
+  ADC_TempSensorVrefintCmd(ENABLE);
 
+  // use channel 10 from ADC1, with sample time 144 cycles
+  //ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_144Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_TempSensor, 1, ADC_SampleTime_144Cycles);	
+	ADC_Cmd(ADC1, ENABLE);
+=======
+  ADC_Init(ADC1,&ADC_init_structure);
+ 
   // use channel 10 from ADC1, with sample time 144 cycles
   ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_144Cycles);
 
-  ADC_Cmd(ADC1, ENABLE);
+  ADC_Cmd(ADC1,ENABLE);
+>>>>>>> parent of df576d4... adjust coding style for adc_configure()
 }
 
 int adc_convert(){
@@ -151,17 +177,29 @@ int adc_convert(){
  return ADC_GetConversionValue(ADC1); //Return the converted data
 }
 
-void GPIO_PIN_INIT(void){
+void GPIO_Configure_Out(void){
     GPIO_InitTypeDef GPIO_InitStructure;
     
-    GPIO_PinAFConfig(GPIOE, GPIO_PinSource3|GPIO_PinSource4|GPIO_PinSource5|GPIO_PinSource6|GPIO_PinSource7|GPIO_PinSource8|GPIO_PinSource9|GPIO_PinSource10|GPIO_PinSource11|GPIO_PinSource12|GPIO_PinSource13|GPIO_PinSource14, GPIO_AF_TIM3);
+    GPIO_PinAFConfig(GPIOG, GPIO_PinSource3|GPIO_PinSource4|GPIO_PinSource5|GPIO_PinSource6|GPIO_PinSource7|GPIO_PinSource8|GPIO_PinSource9|GPIO_PinSource10|GPIO_PinSource11|GPIO_PinSource12|GPIO_PinSource13|GPIO_PinSource14, GPIO_AF_TIM3);
     
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;            // Alt Function - Push Pull
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init( GPIOE, &GPIO_InitStructure ); 
+    GPIO_Init( GPIOG, &GPIO_InitStructure ); 
+}
+
+void GPIO_Configure_In(void)
+{
+	GPIO_InitTypeDef GPIO_initStructre; //Structure for analog input pin
+	
+	//Analog input pin configuration
+	GPIO_initStructre.GPIO_Pin = GPIO_Pin_0;//The channel 10 is connected to PC0
+	GPIO_initStructre.GPIO_Mode = GPIO_Mode_AN; //The PC0 pin is configured in analog mode
+	GPIO_initStructre.GPIO_PuPd = GPIO_PuPd_NOPULL; //We don't need any pull up or pull down
+	GPIO_Init(GPIOC, &GPIO_initStructre);
+	
 }
 
 /**
