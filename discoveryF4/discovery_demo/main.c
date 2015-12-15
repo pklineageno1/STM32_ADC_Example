@@ -100,7 +100,8 @@ int main(void)
     ADC_Configure();
 
     uint16_t USING_PIN[]={GPIO_Pin_3, GPIO_Pin_4, GPIO_Pin_5, GPIO_Pin_6, GPIO_Pin_7, GPIO_Pin_8, GPIO_Pin_9, GPIO_Pin_10, GPIO_Pin_11, GPIO_Pin_12, GPIO_Pin_13, GPIO_Pin_14};
-    while(1){
+    while(1)
+    {
       GPIO_ResetBits(GPIOG, GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14);
 
       ConvertedValue = adc_convert();   //Read the ADC converted value
@@ -121,7 +122,7 @@ int main(void)
  
 void RCC_Configure(void)
 {
-	RCC_AHB1PeriphClockCmd(  RCC_AHB1Periph_GPIOG , ENABLE );
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
 	
 	//Clock configuration
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);//ADC1 is connected to APB2 peripheral bus
@@ -129,46 +130,26 @@ void RCC_Configure(void)
 }
  
  
-void ADC_Configure(){
+void ADC_Configure()
+{
   ADC_InitTypeDef ADC_init_structure; //Structure for adc confguration
-<<<<<<< HEAD
-=======
-  GPIO_InitTypeDef GPIO_initStructre; //Structure for analog input pin
-  //Clock configuration
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1,ENABLE);//ADC1 is connected to APB2 peripheral bus
-  RCC_AHB1PeriphClockCmd(RCC_AHB1ENR_GPIOCEN,ENABLE);//Clock for the ADC port!! Do not forget about this one ;)
-  //Analog input pin configuration
-  GPIO_initStructre.GPIO_Pin = GPIO_Pin_0;//The channel 10 is connected to PC0
-  GPIO_initStructre.GPIO_Mode = GPIO_Mode_AN; //The PC0 pin is configured in analog mode
-  GPIO_initStructre.GPIO_PuPd = GPIO_PuPd_NOPULL; //We don't need any pull up or pull down
-  GPIO_Init(GPIOC,&GPIO_initStructre);
->>>>>>> parent of df576d4... adjust coding style for adc_configure()
 
   //ADC structure configuration
-  ADC_DeInit();//reset all parameters to their default values
-  ADC_init_structure.ADC_DataAlign = ADC_DataAlign_Right;//converted data will be shifted to right
-  ADC_init_structure.ADC_Resolution = ADC_Resolution_10b;//Input voltage is converted into a 10-bit number whose maximum value is 4095
-  ADC_init_structure.ADC_ContinuousConvMode = ENABLE; //the conversion is continuous, the input data is converted more than once
-  ADC_init_structure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;//use timer 1 capture/compare channel 1 for external trigger
-  ADC_init_structure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;//no trigger for conversion
-  ADC_init_structure.ADC_NbrOfConversion = 1;//Number of used ADC channels
-  ADC_init_structure.ADC_ScanConvMode = DISABLE;//No scan (only one channel)
-<<<<<<< HEAD
-  ADC_Init(ADC1, &ADC_init_structure);
-  ADC_TempSensorVrefintCmd(ENABLE);
+    ADC_DeInit();//reset all parameters to their default values
+    ADC_init_structure.ADC_DataAlign = ADC_DataAlign_Right;//converted data will be shifted to right
+    ADC_init_structure.ADC_Resolution = ADC_Resolution_10b;//Input voltage is converted into a 10-bit number whose maximum value is 4095
+    ADC_init_structure.ADC_ContinuousConvMode = ENABLE; //the conversion is continuous, the input data is converted more than once
+    ADC_init_structure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;//use timer 1 capture/compare channel 1 for external trigger
+    ADC_init_structure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;//no trigger for conversion
+    ADC_init_structure.ADC_NbrOfConversion = 1;//Number of used ADC channels
+    ADC_init_structure.ADC_ScanConvMode = DISABLE;//No scan (only one channel)
+    ADC_Init(ADC1, &ADC_init_structure);
+    ADC_TempSensorVrefintCmd(ENABLE);
 
   // use channel 10 from ADC1, with sample time 144 cycles
   //ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_144Cycles);
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_TempSensor, 1, ADC_SampleTime_144Cycles);	
 	ADC_Cmd(ADC1, ENABLE);
-=======
-  ADC_Init(ADC1,&ADC_init_structure);
- 
-  // use channel 10 from ADC1, with sample time 144 cycles
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_144Cycles);
-
-  ADC_Cmd(ADC1,ENABLE);
->>>>>>> parent of df576d4... adjust coding style for adc_configure()
 }
 
 int adc_convert(){
@@ -187,7 +168,7 @@ void GPIO_Configure_Out(void){
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init( GPIOG, &GPIO_InitStructure ); 
+    GPIO_Init(GPIOG, &GPIO_InitStructure ); 
 }
 
 void GPIO_Configure_In(void)
@@ -198,8 +179,7 @@ void GPIO_Configure_In(void)
 	GPIO_initStructre.GPIO_Pin = GPIO_Pin_0;//The channel 10 is connected to PC0
 	GPIO_initStructre.GPIO_Mode = GPIO_Mode_AN; //The PC0 pin is configured in analog mode
 	GPIO_initStructre.GPIO_PuPd = GPIO_PuPd_NOPULL; //We don't need any pull up or pull down
-	GPIO_Init(GPIOC, &GPIO_initStructre);
-	
+	GPIO_Init(GPIOC, &GPIO_initStructre);	
 }
 
 /**
